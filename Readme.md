@@ -1,6 +1,6 @@
 # Tiny chain
 
-Blockchain implementation from scratch for learning purposes.
+Yet another blockchain made for learning purposes.
 
 # Todo list
 
