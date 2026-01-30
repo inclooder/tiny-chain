@@ -6,11 +6,12 @@ use tokio::{time::sleep};
 mod block;
 mod node;
 mod network;
+mod transaction;
+mod wallet;
 
 use block::{Block};
 use node::Node;
 use network::Network;
-
 
 #[tokio::main]
 async fn main() {
