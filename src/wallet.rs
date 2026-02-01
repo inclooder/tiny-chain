@@ -90,11 +90,6 @@ impl From<SecretKey> for PrivKey {
     }
 }
 
-impl Into<String> for PubKey {
-    fn into(self) -> String {
-        hex::encode(self.0)
-    }
-}
 
 impl TryInto<SecretKey> for PrivKey {
     type Error =  secp256k1::Error;
@@ -110,6 +105,12 @@ pub enum PubKeyParseError {
     Hex(#[from] hex::FromHexError),
     #[error("Invalid Length {0}")]
     InvalidLength(usize)
+}
+
+impl Into<String> for PubKey {
+    fn into(self) -> String {
+        hex::encode(self.0)
+    }
 }
 
 impl FromStr for PubKey {

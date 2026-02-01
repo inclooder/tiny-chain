@@ -8,6 +8,7 @@ mod node;
 mod network;
 mod transaction;
 mod wallet;
+mod base64;
 
 use block::{Block};
 use node::Node;

@@ -14,3 +14,4 @@ Yet another blockchain made for learning purposes.
 - NODE API: view balances [ ]
 - Transactions mempool [ ]
 - Keep state between restarts [ ]
+- Wallet signing [ ]
