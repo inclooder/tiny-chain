@@ -1,3 +1,5 @@
+use std::ops::{Shl, BitAnd, BitOr, Not} ;
+
 const ALPHABET: [char; 64] = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -6,6 +8,36 @@ const ALPHABET: [char; 64] = [
 
 const BITS_PER_CHAR: u8 = 6;
 
+fn read_bit<V, P>(val: V, bit_position: P) -> bool
+where
+    V: Shl<P, Output = V>
+        + BitAnd<Output = V>
+        + PartialEq
+        + From<u8>
+{
+    (val & (V::from(1u8) << bit_position)) != V::from(0u8)
+}
+
+fn write_bit<V, P>(val: V, bit_position: P, on: bool) -> V
+where
+    V: Shl<P, Output = V>
+        + BitAnd<Output = V>
+        + BitOr<Output = V>
+        + PartialEq
+        + From<u8>
+        + Not<Output = V>
+{
+    let res: V;
+
+    if on {
+        res = val | (V::from(1u8) << bit_position);
+    } else {
+        res = val & !(V::from(1u8) << bit_position);
+    }
+
+    res
+}
+
 pub fn encode(bytes: &[u8]) -> String {
     let mut buffer: u32 = 0;
     let mut buffer_idx: u8 = 0;
@@ -13,11 +45,9 @@ pub fn encode(bytes: &[u8]) -> String {
 
     for &byte in bytes {
         for i in (0..u8::BITS).rev() {
-            let bit_on = (byte & (1 << i)) != 0;
+            let bit_on = read_bit(byte,  i);
 
-            if bit_on {
-                buffer = buffer | (1 << (BITS_PER_CHAR - 1 - buffer_idx))
-            }
+            buffer = write_bit(buffer, BITS_PER_CHAR - 1 - buffer_idx, bit_on);
 
             buffer_idx += 1;
 
@@ -55,13 +85,9 @@ pub fn decode(input: &str) -> Result<Vec<u8>, DecodeError> {
         let pos = ALPHABET.iter().position(|&e| e == character).ok_or(DecodeError::InvalidInput)?;
 
         for i in (0..BITS_PER_CHAR).rev() {
-            let bit_on = (pos & (1 << i)) != 0;
+            let bit_on = read_bit(pos, i);
 
-            // buffer = 
-
-            if bit_on {
-                buffer = buffer | (1 << u8::BITS - 1 - bits_read);
-            }
+            buffer = write_bit(buffer, u8::BITS - 1 - bits_read, bit_on);
 
             bits_read += 1;
 
