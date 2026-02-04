@@ -6,8 +6,6 @@ const ALPHABET: [char; 64] = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/', 
 ];
 
-const BITS_PER_CHAR: u8 = 6;
-
 fn read_bit<V, P>(val: V, bit_position: P) -> bool
 where
     V: Shl<P, Output = V>
@@ -43,15 +41,17 @@ pub fn encode(bytes: &[u8]) -> String {
     let mut buffer_idx: u8 = 0;
     let mut chunks: Vec<u32> = Vec::new();
 
+    let bits_per_char = (ALPHABET.len() as f32).log2() as u8;
+
     for &byte in bytes {
         for i in (0..u8::BITS).rev() {
             let bit_on = read_bit(byte,  i);
 
-            buffer = write_bit(buffer, BITS_PER_CHAR - 1 - buffer_idx, bit_on);
+            buffer = write_bit(buffer, bits_per_char - 1 - buffer_idx, bit_on);
 
             buffer_idx += 1;
 
-            if buffer_idx == BITS_PER_CHAR {
+            if buffer_idx == bits_per_char {
                 chunks.push(buffer);
                 buffer = 0;
                 buffer_idx = 0;
@@ -60,7 +60,7 @@ pub fn encode(bytes: &[u8]) -> String {
         }
     }
 
-    if buffer_idx != BITS_PER_CHAR {
+    if buffer_idx != bits_per_char {
         chunks.push(buffer);
     }
 
@@ -70,7 +70,7 @@ pub fn encode(bytes: &[u8]) -> String {
 }
 
 #[derive(thiserror::Error, Debug)]
-enum DecodeError {
+pub enum DecodeError {
     #[error("Invalid Input")]
     InvalidInput
 }
@@ -81,10 +81,12 @@ pub fn decode(input: &str) -> Result<Vec<u8>, DecodeError> {
     let mut buffer: u8 = 0;
     let mut bits_read: u32 = 0;
 
+    let bits_per_char = (ALPHABET.len() as f32).log2() as u8;
+
     for character in input.chars() {
         let pos = ALPHABET.iter().position(|&e| e == character).ok_or(DecodeError::InvalidInput)?;
 
-        for i in (0..BITS_PER_CHAR).rev() {
+        for i in (0..bits_per_char).rev() {
             let bit_on = read_bit(pos, i);
 
             buffer = write_bit(buffer, u8::BITS - 1 - bits_read, bit_on);
