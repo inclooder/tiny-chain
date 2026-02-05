@@ -14,17 +14,24 @@ use block::{Block};
 use node::Node;
 use network::Network;
 
+use crate::wallet::Wallet;
+
 #[tokio::main]
 async fn main() {
     let mut network = Network::new();
-    let genesis_block = Block::new(0 ,Default::default(), 0);
+    let genesis_block = Block::new(0 ,Default::default(), 0, vec![]);
     let network_latency = 1000;
 
     let mut handles = vec![];
     
     for _ in 0..5 {
         println!("Creating node");
-        let mut node = Node::new(genesis_block.clone(), network.connect().await);
+        let wallet = Wallet::generate();
+        let mut node = Node::new(
+            genesis_block.clone(),
+            network.connect().await,
+            wallet
+        );
         handles.push(tokio::spawn(async move {
             loop {
                 node.work().await;

@@ -1,15 +1,16 @@
 use std::collections::HashMap;
-use crate::{block::{Block, BlockHash}, network::{NetworkConnection, NetworkMessageData}};
+use crate::{block::{Block, BlockHash}, network::{NetworkConnection, NetworkMessageData}, transaction::Transaction, wallet::Wallet};
 
 pub struct Node {
     connection: NetworkConnection,
     blocks: HashMap<BlockHash, Block>,
     last_block_hash: BlockHash,
     hash_difficulty: u32,
+    wallet: Wallet,
 }
 
 impl Node {
-    pub fn new(start_block: Block, connection: NetworkConnection) -> Node {
+    pub fn new(start_block: Block, connection: NetworkConnection, wallet: Wallet) -> Node {
         let last_block_hash = start_block.hash();
 
         let mut blocks = HashMap::new();
@@ -18,8 +19,9 @@ impl Node {
         Node {
             connection,
             blocks,
-            hash_difficulty: 4 * 5,
             last_block_hash: last_block_hash.clone(),
+            hash_difficulty: 4 * 5,
+            wallet,
         }
     }
 
@@ -41,10 +43,21 @@ impl Node {
         let height = prev_block.height;
 
         let guess = rand::random();
-        let new_block = Block::new(height + 1, prev_block_hash.clone(), guess);
+        let reward_transaction = Transaction::block_reward(
+            self.wallet.pub_key.clone()
+        );
+
+        let transactions = vec![reward_transaction];
+
+        let new_block = Block::new(
+            height + 1,
+            prev_block_hash.clone(),
+            guess,
+            transactions
+        );
         let new_block_hash = new_block.hash();
 
-        if new_block_hash.is_valid(self.hash_difficulty) {
+        if self.is_block_valid(&new_block) {
             println!(
                 "[{0}] Found {1}::{2}",
                 self.connection.id,
@@ -95,7 +108,7 @@ impl Node {
     fn is_block_valid(&self, block: &Block) -> bool {
         match self.blocks.get(&block.prev_hash) {
             Some(prev_block) => {
-                block.height == prev_block.height + 1 && block.hash().is_valid(self.hash_difficulty)
+                block.height == prev_block.height + 1 && block.is_valid(self.hash_difficulty)
             },
             None => false
         }
