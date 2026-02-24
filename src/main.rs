@@ -19,7 +19,7 @@ use crate::wallet::Wallet;
 #[tokio::main]
 async fn main() {
     let mut network = Network::new();
-    let genesis_block = Block::new(0 ,Default::default(), 0, vec![]);
+    let genesis_block = Block::new(0, Default::default(), 0, vec![]);
     let network_latency = 1000;
 
     let mut handles = vec![];

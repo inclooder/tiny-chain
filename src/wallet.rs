@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::str::FromStr;
 
 use hex::FromHexError;
@@ -8,7 +9,7 @@ use secp256k1::hashes::{sha256, Hash};
 
 static SECP: Lazy<Secp256k1<All>> = Lazy::new(|| Secp256k1::new());
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct PubKey([u8; 65]);
 
 #[derive(Debug, Clone)]
@@ -110,6 +111,12 @@ pub enum PubKeyParseError {
 impl Into<String> for PubKey {
     fn into(self) -> String {
         hex::encode(self.0)
+    }
+}
+
+impl Display for PubKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}",  hex::encode(self.0))
     }
 }
 

@@ -15,3 +15,4 @@ Yet another blockchain made for learning purposes.
 - Transactions mempool [ ]
 - Keep state between restarts [ ]
 - Wallet signing [ ]
+- Keep track of confirmed and unconfirmed balance [ ]

@@ -2,12 +2,20 @@ use crate::wallet::PubKey;
 
 #[derive(Clone, Debug)]
 pub struct BlockRewardAction {
-    receiver: PubKey
+    pub receiver: PubKey
 }
 
 #[derive(Clone, Debug)]
 pub enum TransactionAction {
     BlockReward(BlockRewardAction)
+}
+
+impl TransactionAction {
+    pub fn is_valid(&self) -> bool {
+        match self {
+            TransactionAction::BlockReward(_block_reward_action) => true
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -25,6 +33,6 @@ impl Transaction {
     }
 
     pub fn is_valid(&self) -> bool {
-        true
+        self.actions.iter().all(|e| e.is_valid())
     }
 }
